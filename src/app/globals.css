@@ -126,4 +126,13 @@
   html {
     @apply font-sans;
   }
+
+  @theme {
+  --background-image-regal-blue:radial-gradient(circle at center, #ffffff 0%, #e0ecff 60%, #d6e6ff 100%); 
+}
+@theme {
+  --font-inter: "Inter", sans-serif;
+}
+
+
 }
