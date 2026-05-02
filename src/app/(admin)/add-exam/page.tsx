@@ -34,10 +34,7 @@ const formSchema = z.object({
   description: z.string().min(10, "Description is too short"),
   diplomaId: z.string(),
   image: z.string().min(1, "Image is required"),
-  duration: z.preprocess(
-    (val) => Number(val),
-    z.number().min(1, "Duration must be at least 1 min")
-  ),
+ duration: z.coerce.number().min(1, "Duration must be at least 1 min"),
 });
 
 export default function AddExamPage() {
