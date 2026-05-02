@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  
   transpilePackages: ['react-hot-toast'],
 };
 
