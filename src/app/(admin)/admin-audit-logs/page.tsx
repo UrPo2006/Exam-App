@@ -32,10 +32,10 @@ const ACTION_COLORS: Record<string, string> = {
 
 const ROLE_COLORS: Record<string, string> = {
   "Super Admin": "text-red-500",
-  SUPER_ADMIN:   "text-red-500",   // ← أضف
+  SUPER_ADMIN:   "text-red-500",  
   ADMIN:         "text-blue-500",
   Admin:         "text-blue-500",
-  USER:          "text-gray-500",  // ← أضف
+  USER:          "text-gray-500", 
 };
 
 function formatDate(dateStr: string) {
@@ -62,8 +62,7 @@ const LIMIT = 20;
 export default function AuditLogPage() {
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
-const [pendingRole, setPendingRole] = useState("");
-const [appliedRole, setAppliedRole] = useState("");
+
   const [pendingSearch,   setPendingSearch]   = useState("");
   const [pendingCategory, setPendingCategory] = useState("");
   const [pendingAction,   setPendingAction]   = useState("");
@@ -85,7 +84,6 @@ const { data, isLoading } = useGetAuditLogs({
   search:   appliedSearch   || undefined,
   category: appliedCategory || undefined,
   action:   appliedAction   || undefined,
-  role:     appliedRole !== "ALL" ? appliedRole : undefined, 
   sortBy,
   sortOrder,
 });
@@ -113,22 +111,13 @@ const from       = total === 0 ? 0 : (page - 1) * LIMIT + 1;
 const to         = Math.min(page * LIMIT, total);
 
 const filteredLogs = useMemo(() => {
- 
-  if (!appliedRole || appliedRole === "ALL" || appliedRole === "") return logs;
-  
-  return logs.filter((log: any) => {
-
-    const logRole = log.actorRole?.toLowerCase();
-    const targetRole = appliedRole.toLowerCase();
-    
-    return logRole === targetRole;
-  });
-}, [logs, appliedRole]);
+  return logs;
+}, [logs]);
   const applyFilters = () => {
     setAppliedSearch(pendingSearch);
     setAppliedCategory(pendingCategory);
     setAppliedAction(pendingAction);
-    setAppliedRole(pendingRole);
+  
     setPage(1);
   };
 
@@ -136,12 +125,11 @@ const clearFilters = () => {
   setPendingSearch("");
   setPendingCategory("");
   setPendingAction("");
-  setPendingRole(""); 
+ 
 
   setAppliedSearch("");
   setAppliedCategory("");
   setAppliedAction("");
-  setAppliedRole(""); 
 
   setPage(1);
 };
@@ -227,19 +215,7 @@ const clearFilters = () => {
                     <SelectItem value="SEED_DATA">SEED_DATA</SelectItem>
                   </SelectContent>
                 </Select>
-                {/* Role Filter */}
-<Select value={pendingRole} onValueChange={setPendingRole}>
-  <SelectTrigger className="h-10 w-full border-gray-200 text-gray-400 bg-white">
-    <SelectValue placeholder={<span className="text-gray-400 font-mono">Role</span>} />
-  </SelectTrigger>
-
-  <SelectContent>
-    <SelectItem value="ALL">All Roles</SelectItem>
-    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-    <SelectItem value="ADMIN">Admin</SelectItem>
-    <SelectItem value="USER">User</SelectItem>
-  </SelectContent>
-</Select>
+                
 
                 {/* Search */}
                 <div className="relative">
