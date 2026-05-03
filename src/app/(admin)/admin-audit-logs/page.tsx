@@ -32,10 +32,10 @@ const ACTION_COLORS: Record<string, string> = {
 
 const ROLE_COLORS: Record<string, string> = {
   "Super Admin": "text-red-500",
-  SUPER_ADMIN:   "text-red-500",  
-  ADMIN:         "text-blue-500",
-  Admin:         "text-blue-500",
-  USER:          "text-gray-500", 
+  SUPER_ADMIN: "text-red-500",
+  ADMIN: "text-blue-500",
+  Admin: "text-blue-500",
+  USER: "text-gray-500",
 };
 
 function formatDate(dateStr: string) {
@@ -48,13 +48,13 @@ function formatDate(dateStr: string) {
 
 const SORT_OPTIONS = [
   { label: "Action (descending)", value: "action:desc" },
-  { label: "Action (ascending)",  value: "action:asc" },
-  { label: "User (descending)",   value: "user:desc" },
-  { label: "User (ascending)",    value: "user:asc" },
+  { label: "Action (ascending)", value: "action:asc" },
+  { label: "User (descending)", value: "user:desc" },
+  { label: "User (ascending)", value: "user:asc" },
   { label: "Entity (descending)", value: "entity:desc" },
-  { label: "Entity (ascending)",  value: "entity:asc" },
+  { label: "Entity (ascending)", value: "entity:asc" },
   { label: "Newest (descending)", value: "createdAt:desc" },
-  { label: "Newest (ascending)",  value: "createdAt:asc" },
+  { label: "Newest (ascending)", value: "createdAt:asc" },
 ];
 
 const LIMIT = 20;
@@ -63,77 +63,93 @@ export default function AuditLogPage() {
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(true);
 
-  const [pendingSearch,   setPendingSearch]   = useState("");
+  const [pendingSearch, setPendingSearch] = useState("");
   const [pendingCategory, setPendingCategory] = useState("");
-  const [pendingAction,   setPendingAction]   = useState("");
-const [appliedUserSearch, setAppliedUserSearch] = useState("");
-  const [appliedSearch,   setAppliedSearch]   = useState("");
-  const [appliedCategory, setAppliedCategory] = useState("");
-  const [appliedAction,   setAppliedAction]   = useState("");
+  const [pendingAction, setPendingAction] = useState("");
 
-  const [sortBy,    setSortBy]    = useState("createdAt");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [appliedUserSearch, setAppliedUserSearch] = useState("");
+  const [appliedCategory, setAppliedCategory] = useState("");
+  const [appliedAction, setAppliedAction] = useState("");
+
+  const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
 
   const { data: session } = useSession();
   const token = session?.token;
 
-const { data, isLoading } = useGetAuditLogs({
-  token,
-  page,
-  limit: LIMIT,
-  search:   appliedSearch   || undefined,
-  category: appliedCategory || undefined,
-  action:   appliedAction   || undefined,
-  sortBy,
-  sortOrder,
-});
-const { data: usersData } = useGetAllUser({
-  token,
-  page: 1,
-  limit: 100,
-  search: appliedUserSearch || undefined,
-});
- 
-console.log("usersData:", usersData);
-console.log("users array:", usersData?.payload?.data);
-console.log("appliedUserSearch:", appliedUserSearch);
+  // ── جيب الـ 20 user الأوائل بدون search (للـ usersMap الأساسي) ──
+  const { data: usersData } = useGetAllUser({
+    token,
+    page: 1,
+    limit: 20,
+  });
 
-const usersMap = useMemo(() => {
-  const users: any[] = usersData?.payload?.data || [];
-  return users.reduce((acc: Record<string, any>, user: any) => {
-    acc[user.id] = user;
-    return acc;
-  }, {});
-}, [usersData]);
+  // ── جيب الـ users المبحوث عنهم ──
+  const { data: searchedUsersData } = useGetAllUser({
+    token,
+    page: 1,
+    limit: 10,
+    search: appliedUserSearch || undefined,
+  });
 
+  // ── استخرج الـ userId لو البحث رجع نتيجة واحدة ──
+  const searchedUserId = useMemo(() => {
+    if (!appliedUserSearch) return undefined;
+    const users: any[] = searchedUsersData?.payload?.data || [];
+    return users.length > 0 ? users[0].id : undefined;
+  }, [searchedUsersData, appliedUserSearch]);
 
-const logs       = data?.payload?.data || [];
-const total      = data?.payload?.metadata?.total || 0;
-const totalPages = Math.ceil(total / LIMIT);
-const from       = total === 0 ? 0 : (page - 1) * LIMIT + 1;
-const to         = Math.min(page * LIMIT, total);
+  // ── audit logs مع actorUserId لو موجود ──
+  const { data, isLoading } = useGetAuditLogs({
+    token,
+    page,
+    limit: LIMIT,
+    search: !appliedUserSearch ? (appliedSearch || undefined) : undefined,
+    actorUserId: searchedUserId || undefined,
+    category: appliedCategory || undefined,
+    action: appliedAction || undefined,
+    sortBy,
+    sortOrder,
+  });
 
-const filteredLogs = useMemo(() => {
-  return logs;
-}, [logs]);
-const applyFilters = () => {
-  const value = pendingSearch.trim();
-  setAppliedSearch(value || "");
-  setAppliedUserSearch(value || "");  
-  setAppliedCategory(pendingCategory);
-  setAppliedAction(pendingAction);
-  setPage(1);
-};
-const clearFilters = () => {
-  setPendingSearch("");
-  setPendingCategory("");
-  setPendingAction("");
-  setAppliedSearch("");
-  setAppliedUserSearch(""); 
-  setAppliedCategory("");
-  setAppliedAction("");
-  setPage(1);
-};
+  // ── usersMap يجمع الأساسيين + المبحوث عنهم ──
+  const usersMap = useMemo(() => {
+    const allUsers: any[] = usersData?.payload?.data || [];
+    const searchedUsers: any[] = searchedUsersData?.payload?.data || [];
+    const combined = [...allUsers, ...searchedUsers];
+    return combined.reduce((acc: Record<string, any>, user: any) => {
+      acc[user.id] = user;
+      return acc;
+    }, {});
+  }, [usersData, searchedUsersData]);
+
+  const logs = data?.payload?.data || [];
+  const total = data?.payload?.metadata?.total || 0;
+  const totalPages = Math.ceil(total / LIMIT);
+  const from = total === 0 ? 0 : (page - 1) * LIMIT + 1;
+  const to = Math.min(page * LIMIT, total);
+
+  const applyFilters = () => {
+    const value = pendingSearch.trim();
+    setAppliedSearch(value || "");
+    setAppliedUserSearch(value || "");
+    setAppliedCategory(pendingCategory);
+    setAppliedAction(pendingAction);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setPendingSearch("");
+    setPendingCategory("");
+    setPendingAction("");
+    setAppliedSearch("");
+    setAppliedUserSearch("");
+    setAppliedCategory("");
+    setAppliedAction("");
+    setPage(1);
+  };
+
   return (
     <>
       <HeaderUpdater title="Audit Log" />
@@ -216,7 +232,6 @@ const clearFilters = () => {
                     <SelectItem value="SEED_DATA">SEED_DATA</SelectItem>
                   </SelectContent>
                 </Select>
-                
 
                 {/* Search */}
                 <div className="relative">
@@ -293,17 +308,17 @@ const clearFilters = () => {
                 <tr>
                   <td colSpan={5} className="text-center py-16 text-gray-400">Loading...</td>
                 </tr>
-              ) : filteredLogs.length === 0 ? (
-  <tr>
-    <td colSpan={5} className="text-center py-16 text-gray-400">No logs found</td>
-  </tr>
-) : filteredLogs.map((log: any) => {
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-16 text-gray-400">No logs found</td>
+                </tr>
+              ) : logs.map((log: any) => {
                 const { time, date } = formatDate(log.createdAt);
-               const user          = usersMap[log.actorUserId];
-const displayName   = user ? `${user.firstName} ${user.lastName}`.trim() : log.actorUsername;
-const displayEmail  = user?.email        || log.actorEmail;
-const displayRole   = user?.role         || log.actorRole;
-const displayAvatar = user?.profilePhoto || null;
+                const user = usersMap[log.actorUserId];
+                const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : log.actorUsername;
+                const displayEmail = user?.email || log.actorEmail;
+                const displayRole = user?.role || log.actorRole;
+                const displayAvatar = user?.profilePhoto || null;
 
                 return (
                   <tr key={log.id} className="hover:bg-gray-50 transition-colors">
