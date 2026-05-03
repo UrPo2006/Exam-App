@@ -113,13 +113,26 @@ const to         = Math.min(page * LIMIT, total);
 const filteredLogs = useMemo(() => {
   return logs;
 }, [logs]);
-  const applyFilters = () => {
-    setAppliedSearch(pendingSearch);
-    setAppliedCategory(pendingCategory);
-    setAppliedAction(pendingAction);
-  
-    setPage(1);
-  };
+const applyFilters = () => {
+  const value = pendingSearch.trim();
+
+  let smartSearch = value;
+
+  if (value.includes("@")) {
+    smartSearch = value;
+  }
+
+  // لو رقم أو username عادي
+  else if (value.length > 0) {
+    smartSearch = value;
+  }
+
+  setAppliedSearch(smartSearch);
+  setAppliedCategory(pendingCategory);
+  setAppliedAction(pendingAction);
+
+  setPage(1);
+};
 
 const clearFilters = () => {
   setPendingSearch("");
