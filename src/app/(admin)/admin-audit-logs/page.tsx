@@ -66,7 +66,7 @@ export default function AuditLogPage() {
   const [pendingSearch,   setPendingSearch]   = useState("");
   const [pendingCategory, setPendingCategory] = useState("");
   const [pendingAction,   setPendingAction]   = useState("");
-
+const [appliedUserSearch, setAppliedUserSearch] = useState("");
   const [appliedSearch,   setAppliedSearch]   = useState("");
   const [appliedCategory, setAppliedCategory] = useState("");
   const [appliedAction,   setAppliedAction]   = useState("");
@@ -87,13 +87,12 @@ const { data, isLoading } = useGetAuditLogs({
   sortBy,
   sortOrder,
 });
-  const { data: usersData } = useGetAllUser({
-    token,
-    page: 1,
-    limit: 100,
-  });
-  console.log(usersData);
-
+ const { data: usersData } = useGetAllUser({
+  token,
+  page: 1,
+  limit: 100,
+  search: appliedUserSearch || undefined, 
+});
 
 const usersMap = useMemo(() => {
   const users: any[] = usersData?.payload?.data || [];
@@ -115,27 +114,20 @@ const filteredLogs = useMemo(() => {
 }, [logs]);
 const applyFilters = () => {
   const value = pendingSearch.trim();
-
-  // تحسين UX: لو فاضي متبعتش request
-  const smartSearch = value.length > 0 ? value : undefined;
-
-  setAppliedSearch(smartSearch as any);
+  setAppliedSearch(value || "");
+  setAppliedUserSearch(value || "");  
   setAppliedCategory(pendingCategory);
   setAppliedAction(pendingAction);
-
   setPage(1);
 };
-
 const clearFilters = () => {
   setPendingSearch("");
   setPendingCategory("");
   setPendingAction("");
- 
-
   setAppliedSearch("");
+  setAppliedUserSearch(""); 
   setAppliedCategory("");
   setAppliedAction("");
-
   setPage(1);
 };
   return (
