@@ -87,12 +87,16 @@ const { data, isLoading } = useGetAuditLogs({
   sortBy,
   sortOrder,
 });
- const { data: usersData } = useGetAllUser({
+const { data: usersData } = useGetAllUser({
   token,
   page: 1,
   limit: 100,
-  search: appliedUserSearch || undefined, 
+  search: appliedUserSearch || undefined,
 });
+ 
+console.log("usersData:", usersData);
+console.log("users array:", usersData?.payload?.data);
+console.log("appliedUserSearch:", appliedUserSearch);
 
 const usersMap = useMemo(() => {
   const users: any[] = usersData?.payload?.data || [];
