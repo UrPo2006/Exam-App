@@ -116,18 +116,10 @@ const filteredLogs = useMemo(() => {
 const applyFilters = () => {
   const value = pendingSearch.trim();
 
-  let smartSearch = value;
+  // تحسين UX: لو فاضي متبعتش request
+  const smartSearch = value.length > 0 ? value : undefined;
 
-  if (value.includes("@")) {
-    smartSearch = value;
-  }
-
-  // لو رقم أو username عادي
-  else if (value.length > 0) {
-    smartSearch = value;
-  }
-
-  setAppliedSearch(smartSearch);
+  setAppliedSearch(smartSearch as any);
   setAppliedCategory(pendingCategory);
   setAppliedAction(pendingAction);
 
