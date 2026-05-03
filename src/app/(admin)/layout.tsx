@@ -9,6 +9,7 @@ import { HeaderProvider } from "@/components/ui/context/HeaderContext";
 import { ProfileProvider } from "@/components/ui/context/ProfileContext";
 import ASideBar from "./components/a-side-bar/side-bar";
 import Providers from "@/providers";
+import AdminHeader from "./components/Admin Header/admin-header";
 
 export default function AdminLayout({
   children,
@@ -30,7 +31,7 @@ export default function AdminLayout({
 
             <div className="flex flex-col flex-1 overflow-y-auto">
               <header className=" w-296  h-12 sticky top-0 ml-31  ">
-                <DynamicHeader />
+                <AdminHeader />
               </header>
 
               <main className="flex-1  bg-gray-50  ml-26 ">

@@ -38,7 +38,7 @@ import { usePathname } from "next/navigation";
 import Logo from "@/components/ui/Logo/logo";
 
 const navItems = [
-  { hrefs: ["/admin","/admin-diploma","/admin-diplomas","/add-diploma"], label: "Diplomas", icon: GraduationCap },
+  { hrefs: ["/","/admin","/admin-diploma","/admin-diplomas","/add-diploma"], label: "Diplomas", icon: GraduationCap },
   { hrefs: [ "/admin-exams","/add-exam","/add-qu"], label: "Exams", icon: BookOpenCheck },
   { hrefs: ["/admin/account"], label: "Account Settings", icon: UserRound },
   { hrefs: ["/admin-audit-logs"], label: "Audit Log", icon: Logs },
